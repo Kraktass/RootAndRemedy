@@ -1,4 +1,4 @@
-using Unity.VisualScripting;
+
 using UnityEngine;
 
 public class PlayerInventory : MonoBehaviour {
@@ -16,6 +16,13 @@ public class PlayerInventory : MonoBehaviour {
     [SerializeField] private int hotbarSize = 9;
     [SerializeField] private int selectedHotbarIndex = 0;
 
+    public event System.Action<int, InventorySlot> OnSlotChanged;
+    public event System.Action<int> OnSelectedHotbarChanged;
+
+    public int InventorySize => slots.Length;
+
+    public int HotbarSize => Mathf.Min(hotbarSize, slots.Length);
+    public int SelectedHotbarIndex => Mathf.Clamp(selectedHotbarIndex, 0, HotbarSize - 1);
 
     void Awake() {
         slots = new InventorySlot[size];
@@ -23,8 +30,9 @@ public class PlayerInventory : MonoBehaviour {
             slots[i] = new InventorySlot();
     }
 
-    public int HotbarSize => Mathf.Min(hotbarSize, slots.Length);
-    public int SelectedHotbarIndex => Mathf.Clamp(selectedHotbarIndex, 0, HotbarSize - 1);
+    public InventorySlot GetSlot(int i) {
+        return slots[i];
+    }
 
     public InventorySlot GetSelectedHotbarSlot() {
         return slots[SelectedHotbarIndex];
@@ -33,17 +41,25 @@ public class PlayerInventory : MonoBehaviour {
     public void SelectNextHotbarSlot() {
         int size = HotbarSize;
         if (size <= 0) return;
-
         selectedHotbarIndex = (selectedHotbarIndex + 1) % size;
         DebugPrintSelected();
+        RaiseSelectedChanged();
     }
 
     public void SelectPreviousHotbarSlot() {
         int size = HotbarSize;
         if (size <= 0) return;
-
         selectedHotbarIndex = (selectedHotbarIndex - 1 + size) % size;
         DebugPrintSelected();
+        RaiseSelectedChanged();
+    }
+
+    private void RaiseSlotChanged(int slotIndex) {
+        OnSlotChanged?.Invoke(slotIndex, slots[slotIndex]);
+    }
+
+    private void RaiseSelectedChanged() {
+        OnSelectedHotbarChanged?.Invoke(SelectedHotbarIndex);
     }
 
     private void DebugPrintSelected() {
@@ -66,6 +82,7 @@ public class PlayerInventory : MonoBehaviour {
             int quantityToMove = Mathf.Min(availableSpace, remainingQuantity);
 
             currentSlot.count += quantityToMove;
+            RaiseSlotChanged(i);
             remainingQuantity -= quantityToMove;
 
             if (remainingQuantity <= 0) return true;
@@ -80,11 +97,19 @@ public class PlayerInventory : MonoBehaviour {
 
             int quantityToMove = Mathf.Min(itemToAdd.maxStackSize, remainingQuantity);
             currentSlot.count = quantityToMove;
+            RaiseSlotChanged(i);
             remainingQuantity -= quantityToMove;
 
             if (remainingQuantity <= 0) return true;
         }
         return false;
+    }
+
+    public void RaiseFullRefresh() {
+        for (int i = 0; i < slots.Length; i++)
+            RaiseSlotChanged(i);
+
+        RaiseSelectedChanged();
     }
 
     [ContextMenu("Debug: Add Debug Item")]

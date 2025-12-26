@@ -19,7 +19,7 @@ MonoBehaviour:
     width: 1920
     height: 989
   m_ShowMode: 4
-  m_Title: Project
+  m_Title: Game
   m_RootView: {fileID: 2}
   m_MinSize: {x: 875, y: 300}
   m_MaxSize: {x: 10000, y: 10000}
@@ -119,7 +119,7 @@ MonoBehaviour:
   m_MinSize: {x: 300, y: 112}
   m_MaxSize: {x: 24288, y: 16192}
   vertical: 0
-  controlID: 113
+  controlID: 102
   draggingID: 0
 --- !u!114 &6
 MonoBehaviour:
@@ -145,7 +145,7 @@ MonoBehaviour:
   m_MinSize: {x: 200, y: 112}
   m_MaxSize: {x: 16192, y: 16192}
   vertical: 1
-  controlID: 114
+  controlID: 103
   draggingID: 0
 --- !u!114 &7
 MonoBehaviour:
@@ -171,7 +171,7 @@ MonoBehaviour:
   m_MinSize: {x: 200, y: 56}
   m_MaxSize: {x: 16192, y: 8096}
   vertical: 0
-  controlID: 115
+  controlID: 104
   draggingID: 0
 --- !u!114 &8
 MonoBehaviour:
@@ -303,7 +303,7 @@ MonoBehaviour:
   m_Pos:
     serializedVersion: 2
     x: 0
-    y: 0
+    y: 43
     width: 1920
     height: 36
   m_SerializedDataModeController:
@@ -1136,7 +1136,7 @@ MonoBehaviour:
   m_Rotation:
     m_Target: {x: -0.41194206, y: -0.030294668, z: 0.013740364, w: -0.9106645}
     speed: 2
-    m_Value: {x: -0.4119421, y: -0.03029467, z: 0.013740365, w: -0.91066456}
+    m_Value: {x: -0.41191888, y: -0.030292964, z: 0.013739591, w: -0.91061324}
   m_Size:
     m_Target: 19.185442
     speed: 2
@@ -1196,7 +1196,7 @@ MonoBehaviour:
   m_Pos:
     serializedVersion: 2
     x: 0
-    y: 24
+    y: 79
     width: 225
     height: 632
   m_SerializedDataModeController:
@@ -1215,11 +1215,17 @@ MonoBehaviour:
   m_SceneHierarchy:
     m_TreeViewState:
       scrollPos: {x: 0, y: 0}
-      m_SelectedIDs: []
+      m_SelectedIDs:
+      - m_Data: 47246
       m_LastClickedID:
-        m_Data: 0
+        m_Data: 47246
       m_ExpandedIDs:
+      - m_Data: -20958
+      - m_Data: -2878
+      - m_Data: -2780
+      - m_Data: -2714
       - m_Data: -1294
+      - m_Data: 47256
       m_RenameOverlay:
         m_UserAcceptedRename: 0
         m_Name: 
@@ -1266,8 +1272,8 @@ MonoBehaviour:
     m_TextWithWhitespace: "Game\u200B"
   m_Pos:
     serializedVersion: 2
-    x: 227
-    y: 24
+    x: 226
+    y: 79
     width: 1325
     height: 632
   m_SerializedDataModeController:
@@ -1370,7 +1376,7 @@ MonoBehaviour:
   m_Pos:
     serializedVersion: 2
     x: 0
-    y: 682
+    y: 737
     width: 1552
     height: 249
   m_SerializedDataModeController:
@@ -1397,7 +1403,7 @@ MonoBehaviour:
     m_SkipHidden: 0
     m_SearchArea: 1
     m_Folders:
-    - Assets/ScriptableObjects/Items
+    - Assets/Prefabs
     m_Globs: []
     m_ProductIds: 
     m_AnyWithAssetOrigin: 0
@@ -1407,7 +1413,7 @@ MonoBehaviour:
   m_ViewMode: 1
   m_StartGridSize: 64
   m_LastFolders:
-  - Assets/ScriptableObjects/Items
+  - Assets/Prefabs
   m_LastFoldersGridSize: -1
   m_LastProjectPath: D:\Unity3D\RootAndRemedy\RootAndRemedy
   m_LockTracker:
@@ -1416,14 +1422,14 @@ MonoBehaviour:
   m_FolderTreeState:
     scrollPos: {x: 0, y: 79}
     m_SelectedIDs:
-    - m_Data: 47728
+    - m_Data: 47722
     m_LastClickedID:
-      m_Data: 47728
+      m_Data: 47722
     m_ExpandedIDs:
     - m_Data: 0
     - m_Data: 47414
-    - m_Data: 47416
     - m_Data: 47418
+    - m_Data: 1000000000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -1485,8 +1491,9 @@ MonoBehaviour:
       m_Icon: {fileID: 0}
       m_ResourceFile: 
   m_ListAreaState:
-    m_SelectedInstanceIDs: []
-    m_LastClickedInstanceID: 0
+    m_SelectedInstanceIDs:
+    - m_Data: 47246
+    m_LastClickedInstanceID: 47246
     m_HadKeyboardFocusLastEvent: 1
     m_ExpandedInstanceIDs: []
     m_RenameOverlay:
@@ -1665,8 +1672,8 @@ MonoBehaviour:
     m_TextWithWhitespace: "Inspector\u200B"
   m_Pos:
     serializedVersion: 2
-    x: 1554
-    y: 24
+    x: 1553
+    y: 79
     width: 366
     height: 907
   m_SerializedDataModeController:

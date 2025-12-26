@@ -59,6 +59,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": true
+                },
+                {
+                    "name": "ToggleInventory",
+                    "type": "Button",
+                    "id": "d0747415-9df4-40c8-990d-ba12c6950364",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -246,6 +255,28 @@
                     "processors": "",
                     "groups": "",
                     "action": "HotbarScroll",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "6b18cded-da04-4d0d-99ad-e3e3c5287070",
+                    "path": "<Keyboard>/b",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ToggleInventory",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "e7a9010f-b004-4be7-ae0b-1753e2dce78e",
+                    "path": "<Gamepad>/buttonNorth",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ToggleInventory",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
