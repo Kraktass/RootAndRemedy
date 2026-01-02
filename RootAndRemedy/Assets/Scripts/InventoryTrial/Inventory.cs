@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using UnityEngine.UI;
+using UnityEngine.InputSystem;
 
 public class Inventory : MonoBehaviour {
 
@@ -9,8 +10,17 @@ public class Inventory : MonoBehaviour {
 
     public GameObject hotbarObject;
     public GameObject inventorySlotParent;
+    public GameObject container;
 
     public Image dragIcon;
+
+
+    public float pickupRange;
+    public Material highlightMaterial;
+
+    Material originalMaterial;
+    Renderer lookedAtRenderer = null;
+    Item lookedAtItem = null;
 
     List<Slot> inventorySlots = new List<Slot>();
     List<Slot> hotbarSlots = new List<Slot>();
@@ -19,27 +29,33 @@ public class Inventory : MonoBehaviour {
     Slot draggedSlot;
     bool isDragging = false;
 
+    public bool IsOpen => container != null && container.activeSelf;
+
+
     void Awake() {
         inventorySlots.AddRange(inventorySlotParent.GetComponentsInChildren<Slot>());
         inventorySlots.AddRange(hotbarObject.GetComponentsInChildren<Slot>());
 
         allSlots.AddRange(inventorySlots);
         allSlots.AddRange(hotbarSlots);
+
+        container.SetActive(false);
     }
 
     void Update() {
-        if (Input.GetKeyDown(KeyCode.T)) {
-            AddItem(woodItem, 3);
-        }
-        else if (Input.GetKeyDown(KeyCode.Y)) {
-            AddItem(axeItem, 1);
-        }
+        DetectLookedAtItem();
+        Pickup();
 
         StartDrag();
         UpdateDragItemPosition();
         EndDrag();
 
     }
+
+    public void ToggleInventory() {
+        container.SetActive(!container.activeSelf);
+    }
+
 
     public void AddItem(ItemSO itemToAdd, int amount) {
 
@@ -160,6 +176,37 @@ public class Inventory : MonoBehaviour {
     void UpdateDragItemPosition() {
         if (isDragging) {
             dragIcon.transform.position = Input.mousePosition;
+        }
+    }
+
+    void Pickup() {
+        if (lookedAtRenderer != null && Input.GetKeyDown(KeyCode.E)) {
+            Item item = lookedAtRenderer.GetComponent<Item>();
+            if (item != null) {
+                AddItem(item.item, item.amount);
+                Destroy(item.gameObject);
+            }
+        }
+    }
+
+    void DetectLookedAtItem() {
+        if (lookedAtRenderer != null) {
+            lookedAtRenderer.material = originalMaterial;
+            lookedAtRenderer = null;
+            originalMaterial = null;
+        }
+
+        Ray ray = new Ray(Camera.main.transform.position, Camera.main.transform.forward);
+        if (Physics.Raycast(ray, out RaycastHit hit, pickupRange)) {
+            Item item = hit.collider.GetComponent<Item>();
+            if (item != null) {
+                Renderer rend = item.GetComponent<Renderer>();
+                if (rend != null) {
+                    originalMaterial = rend.material;
+                    rend.material = highlightMaterial;
+                    lookedAtRenderer = rend;
+                }
+            }
         }
     }
 }
