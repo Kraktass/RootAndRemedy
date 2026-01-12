@@ -1,9 +1,13 @@
 using UnityEngine;
 using System.Collections.Generic;
 using UnityEngine.UI;
-using UnityEngine.InputSystem;
+using Unity.VisualScripting;
+
 
 public class Inventory : MonoBehaviour {
+
+    [SerializeField] private Color hotbarNormalColor = Color.white;
+    [SerializeField] private Color hotbarSelectedColor = Color.yellow;
 
     public ItemSO woodItem;
     public ItemSO axeItem;
@@ -16,44 +20,75 @@ public class Inventory : MonoBehaviour {
 
 
     public float pickupRange;
+    [SerializeField] float raycastDistance = 100f;
     public Material highlightMaterial;
 
     Material originalMaterial;
     Renderer lookedAtRenderer = null;
-    Item lookedAtItem = null;
+    // Item lookedAtItem = null;
 
     List<Slot> inventorySlots = new List<Slot>();
-    List<Slot> hotbarSlots = new List<Slot>();
     List<Slot> allSlots = new List<Slot>();
+    List<Slot> hotbarSlots = new List<Slot>();
 
     Slot draggedSlot;
     bool isDragging = false;
 
     public bool IsOpen => container != null && container.activeSelf;
 
+    [SerializeField] Transform player;
+    [SerializeField] private LayerMask pickupMask = ~0;
+    Vector2 pointerScreenPos;
+
+    public int selectedHotbarIndex = 0;
+    public int HotbarAmount => hotbarSlots.Count;
+
 
     void Awake() {
-        inventorySlots.AddRange(inventorySlotParent.GetComponentsInChildren<Slot>());
-        inventorySlots.AddRange(hotbarObject.GetComponentsInChildren<Slot>());
+        inventorySlots.Clear();
+        hotbarSlots.Clear();
+        allSlots.Clear();
+
+        inventorySlots.AddRange(inventorySlotParent.GetComponentsInChildren<Slot>(true));
+        hotbarSlots.AddRange(hotbarObject.GetComponentsInChildren<Slot>(true));
 
         allSlots.AddRange(inventorySlots);
         allSlots.AddRange(hotbarSlots);
+
+        HighlightHotbarSlot();
 
         container.SetActive(false);
     }
 
     void Update() {
         DetectLookedAtItem();
-        Pickup();
-
-        StartDrag();
-        UpdateDragItemPosition();
-        EndDrag();
-
+        if (isDragging) {
+            UpdateDragItemPosition();
+        }
     }
 
     public void ToggleInventory() {
         container.SetActive(!container.activeSelf);
+    }
+
+    public void SelectNextHotbarSlot() {
+        selectedHotbarIndex = (selectedHotbarIndex + 1) % HotbarAmount;
+        HighlightHotbarSlot();
+        Debug.Log(selectedHotbarIndex);
+    }
+
+    public void SelectPreviousHotbarSlot() {
+        selectedHotbarIndex = (selectedHotbarIndex - 1 + HotbarAmount) % HotbarAmount;
+        HighlightHotbarSlot();
+        Debug.Log(selectedHotbarIndex);
+    }
+
+    public void HighlightHotbarSlot() {
+        for (int i = 0; i < hotbarSlots.Count; i++) {
+            Image img = hotbarSlots[i].GetComponent<Image>();
+
+            img.color = (i == selectedHotbarIndex) ? hotbarSelectedColor : hotbarNormalColor;
+        }
     }
 
 
@@ -97,35 +132,66 @@ public class Inventory : MonoBehaviour {
 
     }
 
-    void StartDrag() {
+    public void OnClickPressed() {
+        if (!IsOpen) return;
 
-        if (Input.GetMouseButtonDown(0)) {
-            Slot hovered = GetHoveredSlot();
+        Slot hovered = GetHoveredSlot();
+        Debug.Log("Hovered on release: " + (hovered ? hovered.name : "NULL"));
+        if (hovered != null && hovered.HasItem()) {
+            draggedSlot = hovered;
+            isDragging = true;
 
-            if (hovered != null && hovered.HasItem()) {
-                draggedSlot = hovered;
-                isDragging = true;
+            dragIcon.sprite = hovered.GetItem().itemIcon;
+            dragIcon.color = new Color(1, 1, 1, 0.5f);
+            dragIcon.enabled = true;
 
-                dragIcon.sprite = hovered.GetItem().itemIcon;
-                dragIcon.color = new Color(1, 1, 1, 0.5f);
-                dragIcon.enabled = true;
-            }
+            UpdateDragItemPosition();
         }
-
     }
 
-    void EndDrag() {
-        if (Input.GetMouseButtonUp(0) && isDragging) {
-            Slot hovered = GetHoveredSlot();
+    public void OnClickReleased() {
+        if (!IsOpen) return;
+        if (!isDragging) return;
 
-            if (hovered != null) {
-                HandleDrop(draggedSlot, hovered);
-
-                dragIcon.enabled = false;
-                draggedSlot = null;
-                isDragging = false;
-            }
+        Slot hovered = GetHoveredSlot();
+        Debug.Log("Hovered on release: " + (hovered ? hovered.name : "NULL"));
+        if (hovered != null) {
+            HandleDrop(draggedSlot, hovered);
         }
+
+        dragIcon.enabled = false;
+        draggedSlot = null;
+        isDragging = false;
+    }
+
+    public void OnPrimaryClick() {
+        if (!IsOpen) return;
+
+        Slot hovered = GetHoveredSlot();
+        if (hovered == null) return;
+
+        // If not currently holding/dragging: pick up from clicked slot
+        if (!isDragging) {
+            if (!hovered.HasItem()) return;
+
+            draggedSlot = hovered;
+            isDragging = true;
+
+            dragIcon.sprite = hovered.GetItem().itemIcon;
+            dragIcon.color = new Color(1, 1, 1, 0.5f);
+            dragIcon.enabled = true;
+
+            // Optional: snap icon immediately
+            dragIcon.transform.position = pointerScreenPos;
+            return;
+        }
+
+        // If currently holding/dragging: place into clicked slot
+        HandleDrop(draggedSlot, hovered);
+
+        dragIcon.enabled = false;
+        draggedSlot = null;
+        isDragging = false;
     }
 
     Slot GetHoveredSlot() {
@@ -174,19 +240,33 @@ public class Inventory : MonoBehaviour {
     }
 
     void UpdateDragItemPosition() {
-        if (isDragging) {
-            dragIcon.transform.position = Input.mousePosition;
-        }
+        if (isDragging)
+            dragIcon.transform.position = pointerScreenPos;
     }
 
-    void Pickup() {
-        if (lookedAtRenderer != null && Input.GetKeyDown(KeyCode.E)) {
-            Item item = lookedAtRenderer.GetComponent<Item>();
-            if (item != null) {
-                AddItem(item.item, item.amount);
-                Destroy(item.gameObject);
-            }
+    public void SetPointerPosition(Vector2 screenPos) {
+        pointerScreenPos = screenPos;
+    }
+
+
+    public void TryPickup() {
+        if (lookedAtRenderer == null) return;
+
+        Item item = lookedAtRenderer.GetComponent<Item>();
+        if (item == null) return;
+
+        if (player == null) {
+            Debug.LogError("Inventory.TryPickup: Player Transform is not assigned.");
+            return;
         }
+
+        float dist = Vector3.Distance(player.position, item.transform.position);
+        Debug.Log($"Pickup check: player={player?.name}, item={item.name}, dist={dist}, range={pickupRange}");
+        if (dist > pickupRange)
+            return;
+
+        AddItem(item.item, item.amount);
+        Destroy(item.gameObject);
     }
 
     void DetectLookedAtItem() {
@@ -196,8 +276,8 @@ public class Inventory : MonoBehaviour {
             originalMaterial = null;
         }
 
-        Ray ray = new Ray(Camera.main.transform.position, Camera.main.transform.forward);
-        if (Physics.Raycast(ray, out RaycastHit hit, pickupRange)) {
+        Ray ray = Camera.main.ScreenPointToRay(pointerScreenPos);
+        if (Physics.Raycast(ray, out RaycastHit hit, raycastDistance, pickupMask)) {
             Item item = hit.collider.GetComponent<Item>();
             if (item != null) {
                 Renderer rend = item.GetComponent<Renderer>();
