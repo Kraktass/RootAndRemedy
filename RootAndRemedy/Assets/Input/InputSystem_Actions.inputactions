@@ -333,7 +333,7 @@
                     "name": "",
                     "id": "67b6ae6e-b352-4bdc-92ba-0a0da012af07",
                     "path": "<Mouse>/leftButton",
-                    "interactions": "",
+                    "interactions": "Press",
                     "processors": "",
                     "groups": "",
                     "action": "Click",

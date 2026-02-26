@@ -5,6 +5,7 @@ public class PlayerMovement : MonoBehaviour {
     [Header("Tuning")]
     [SerializeField] float moveSpeed = 6f;
     [SerializeField] float rotationSpeed = 10f;
+    public bool IsMoving { get; private set; }
 
     Rigidbody rb;
     Vector2 moveInput;
@@ -24,6 +25,7 @@ public class PlayerMovement : MonoBehaviour {
     }
 
     void FixedUpdate() {
+        IsMoving = moveInput.sqrMagnitude > 0.001f;
         ProcessTranslation();
         ProcessRotation();
     }

@@ -1,7 +1,7 @@
 
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.UIElements.Experimental;
+
 
 
 public class InventoryInputBridge : MonoBehaviour {
@@ -38,10 +38,10 @@ public class InventoryInputBridge : MonoBehaviour {
     public void OnHotbarScroll(InputValue value) {
         Vector2 scrollDirection = value.Get<Vector2>();
         if (scrollDirection.y > 0.5f) {
-            inventory.SelectNextHotbarSlot();
+            inventory.SelectPreviousHotbarSlot();
         }
         else if (scrollDirection.y < -0.5f) {
-            inventory.SelectPreviousHotbarSlot();
+            inventory.SelectNextHotbarSlot();
         }
     }
 }
