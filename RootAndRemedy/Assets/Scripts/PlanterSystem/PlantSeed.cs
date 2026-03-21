@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class PlantSeed : MonoBehaviour, IInteractable {
@@ -10,6 +11,7 @@ public class PlantSeed : MonoBehaviour, IInteractable {
     Material _materialInstance;
     Color _originalEmissionColor;
     bool _emissionWasEnabled;
+    ItemSO seed;
 
     void Awake() {
         _renderer = GetComponent<MeshRenderer>();
@@ -26,6 +28,7 @@ public class PlantSeed : MonoBehaviour, IInteractable {
                 state = PlanterState.Growing;
                 break;
             case PlanterState.Growing:
+                GrowthTimer();
                 Debug.Log("Still growing...");
                 break;
             case PlanterState.Harvestable:
@@ -50,5 +53,10 @@ public class PlantSeed : MonoBehaviour, IInteractable {
 
     public bool CanInteract() {
         return state == PlanterState.Empty || state == PlanterState.Harvestable;
+    }
+
+    private IEnumerator GrowthTimer() {
+        yield return new WaitForSeconds(seed.growthTime);
+        state = PlanterState.Harvestable;
     }
 }

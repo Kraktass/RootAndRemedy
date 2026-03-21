@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Unity.Multiplayer.Center.Common.Analytics;
 using UnityEngine;
 
 public class CheckInteractable : MonoBehaviour {
@@ -61,8 +62,10 @@ public class CheckInteractable : MonoBehaviour {
 
     public void OnInteract() {
         var actedOn = currentInteractable;
-        actedOn?.Interact();
-        Debug.Log("You planted in: " + currentInteractable);
+        if (actedOn != null) {
+            actedOn.Interact();
+            Debug.Log("You planted in: " + currentInteractable);
+        }
         SelectNearest();
     }
 

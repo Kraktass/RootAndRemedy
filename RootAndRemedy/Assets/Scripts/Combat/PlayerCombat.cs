@@ -37,6 +37,8 @@ public class PlayerCombat : MonoBehaviour {
 
     private bool isAiming;
     private Vector3 lastAimPoint;
+    [SerializeField] Inventory inventory;
+
 
     void Awake() {
         if (!cam) cam = Camera.main;
@@ -46,20 +48,46 @@ public class PlayerCombat : MonoBehaviour {
 
     // Called by Player Input (Send Messages) for the "Throw" action
     public void OnThrow(InputValue value) {
+        ItemStack stack = inventory.GetSelectedItemStack();
+        if (stack == null || stack.item.itemUseType != ItemUseType.Throwable) return;
         bool pressed = value.isPressed;
-
-        if (pressed) {
-            isAiming = true;
-            if (aimReticle) aimReticle.gameObject.SetActive(true);
-            if (arcLine) arcLine.enabled = true;
+        if (stack.amount > 0) {
+            if (pressed) {
+                StartAiming();
+                Debug.Log("Started Aiming");
+            }
+            else {
+                StopAiming();
+                Debug.Log("Stopped Aiming");
+                inventory.ConsumeSelectedItem();
+            }
         }
-        else {
-            if (isAiming)
-                FireProjectile();
+    }
 
-            isAiming = false;
-            if (aimReticle) aimReticle.gameObject.SetActive(false);
-            if (arcLine) { arcLine.positionCount = 0; arcLine.enabled = false; }
+
+    void StartAiming() {
+        Debug.Log("Started Aiming");
+        isAiming = true;
+
+        if (aimReticle)
+            aimReticle.gameObject.SetActive(true);
+
+        if (arcLine)
+            arcLine.enabled = true;
+    }
+
+    void StopAiming() {
+        if (isAiming)
+            FireProjectile();
+
+        isAiming = false;
+
+        if (aimReticle)
+            aimReticle.gameObject.SetActive(false);
+
+        if (arcLine) {
+            arcLine.positionCount = 0;
+            arcLine.enabled = false;
         }
     }
 

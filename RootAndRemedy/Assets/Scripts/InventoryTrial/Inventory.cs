@@ -28,7 +28,6 @@ public class Inventory : MonoBehaviour {
 
     Material originalMaterial;
     Renderer lookedAtRenderer = null;
-    // Item lookedAtItem = null;
 
     List<Slot> inventorySlots = new List<Slot>();
     List<Slot> allSlots = new List<Slot>();
@@ -85,57 +84,43 @@ public class Inventory : MonoBehaviour {
     public void SelectNextHotbarSlot() {
         selectedHotbarIndex = (selectedHotbarIndex + 1) % HotbarAmount;
         HighlightHotbarSlot();
-
+        GetSelectedItemStack();
     }
 
     public void SelectPreviousHotbarSlot() {
         selectedHotbarIndex = (selectedHotbarIndex - 1 + HotbarAmount) % HotbarAmount;
         HighlightHotbarSlot();
+        GetSelectedItemStack();
     }
 
     public void HighlightHotbarSlot() {
         for (int i = 0; i < hotbarSlots.Count; i++) {
             Image img = hotbarSlots[i].GetComponent<Image>();
-
             img.color = (i == selectedHotbarIndex) ? hotbarSelectedColor : hotbarNormalColor;
         }
     }
 
+    public ItemStack GetSelectedItemStack() {
+        Slot slot = hotbarSlots[selectedHotbarIndex];
+        if (!slot.HasItem()) {
+            return null;
+        }
+        return new ItemStack {
+            item = slot.GetItem(),
+            amount = slot.GetAmount()
+        };
+    }
+
+    public void ConsumeSelectedItem() {
+        Slot slot = hotbarSlots[selectedHotbarIndex];
+        if (slot.HasItem()) {
+            slot.RemoveAmount(1);
+        }
+    }
 
     public void AddItem(ItemSO itemToAdd, int amount) {
 
         int remaining = amount;
-
-        /* foreach (Slot slot in allSlots) {
-            if (slot.HasItem() && slot.GetItem() == itemToAdd) {
-                int currentAmount = slot.GetAmount();
-                int maxStack = itemToAdd.maxStackSize;
-
-                if (currentAmount < maxStack) {
-                    int spaceLeft = maxStack - currentAmount;
-                    int amountToAdd = Mathf.Min(spaceLeft, remaining);
-
-                    slot.SetItem(itemToAdd, currentAmount + amountToAdd);
-                    remaining -= amountToAdd;
-
-                    if (remaining <= 0) {
-                        return;
-                    }
-                }
-            }
-        }
-
-        foreach (Slot slot in allSlots) {
-            if (!slot.HasItem()) {
-                int amountToPlace = Mathf.Min(itemToAdd.maxStackSize, remaining);
-                slot.SetItem(itemToAdd, amountToPlace);
-                remaining -= amountToPlace;
-
-                if (remaining <= 0) {
-                    return;
-                }
-            }
-        } */
 
         foreach (Slot slot in hotbarSlots) {
             if (!slot.HasItem()) continue;
@@ -216,44 +201,10 @@ public class Inventory : MonoBehaviour {
         return null;
     }
 
-    /*     public void OnClickPressed() {
-            if (!IsOpen) return;
-
-            Slot hovered = GetHoveredSlot();
-            Debug.Log("Hovered on release: " + (hovered ? hovered.name : "NULL"));
-            if (hovered != null && hovered.HasItem()) {
-                draggedSlot = hovered;
-                isDragging = true;
-
-                dragIcon.sprite = hovered.GetItem().itemIcon;
-                dragIcon.color = new Color(1, 1, 1, 0.5f);
-                dragIcon.enabled = true;
-
-                UpdateDragItemPosition();
-            }
-        }
-
-        public void OnClickReleased() {
-            if (!IsOpen) return;
-            if (!isDragging) return;
-
-            Slot hovered = GetHoveredSlot();
-            Debug.Log("Hovered on release: " + (hovered ? hovered.name : "NULL"));
-            if (hovered != null) {
-                HandleDrop(draggedSlot, hovered);
-            }
-
-            dragIcon.enabled = false;
-            draggedSlot = null;
-            isDragging = false;
-        } */
-
     public void OnPrimaryClick() {
         Slot hovered = GetSlotUnderPointer();
-        // Debug.Log("Slot under pointer: " + (hovered ? hovered.name : "NULL"));
         if (!IsOpen) return;
 
-        // Slot hovered = GetSlotUnderPointer();
         if (hovered == null) return;
 
         // If not currently holding/dragging: pick up from clicked slot
@@ -279,15 +230,6 @@ public class Inventory : MonoBehaviour {
         draggedSlot = null;
         isDragging = false;
     }
-
-    /*     Slot GetHoveredSlot() {
-            foreach (Slot s in allSlots) {
-                if (s.hovering) {
-                    return s;
-                }
-            }
-            return null;
-        } */
 
     void HandleDrop(Slot from, Slot to) {
         if (from == to) return;

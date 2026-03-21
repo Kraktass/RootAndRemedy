@@ -10,4 +10,6 @@ public class ItemSO : ScriptableObject {
     public GameObject itemPrefab;
     public GameObject handItemPrefab;
     public ItemUseType itemUseType;
+    public float growthTime;
+
 }

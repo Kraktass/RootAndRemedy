@@ -13,7 +13,9 @@ MonoBehaviour:
   m_Name: Item_Wood
   m_EditorClassIdentifier: Assembly-CSharp::ItemSO
   itemName: Wood
-  itemIcon: {fileID: 21300000, guid: 564355b63a1b7af4b9881c579f67d0bf, type: 3}
+  itemIcon: {fileID: 21300000, guid: 55bee55bf3951c54ab34634417a596e1, type: 3}
   maxStackSize: 10
   itemPrefab: {fileID: 0}
   handItemPrefab: {fileID: 0}
+  itemUseType: 0
+  growthTime: 0
