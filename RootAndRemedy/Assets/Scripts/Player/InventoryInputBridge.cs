@@ -19,7 +19,6 @@ public class InventoryInputBridge : MonoBehaviour {
 
     public void OnInteract() {
         if (inventory.IsOpen) return;
-        inventory.TryPickup();
     }
 
     public void OnClick(InputValue value) {
@@ -32,7 +31,6 @@ public class InventoryInputBridge : MonoBehaviour {
 
     public void OnInteract(InputValue _) {
         if (inventory.IsOpen) return;
-        inventory.TryPickup();
     }
 
     public void OnHotbarScroll(InputValue value) {

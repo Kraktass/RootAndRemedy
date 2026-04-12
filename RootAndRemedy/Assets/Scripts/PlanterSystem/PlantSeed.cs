@@ -6,6 +6,7 @@ public class PlantSeed : MonoBehaviour, IInteractable {
     [SerializeField] PlanterState state = PlanterState.Empty;
     [SerializeField] Color highlightEmission = Color.green;
     [SerializeField] float highlightIntensity = 0.5f;
+    [SerializeField] Inventory inventory;
 
     Renderer _renderer;
     Material _materialInstance;
@@ -18,21 +19,29 @@ public class PlantSeed : MonoBehaviour, IInteractable {
         _materialInstance = _renderer.material;
         _originalEmissionColor = _materialInstance.GetColor("_EmissionColor");
         _emissionWasEnabled = _materialInstance.IsKeywordEnabled("_EMISSION");
-        Debug.Log(_originalEmissionColor);
     }
+
+
 
     public void Interact() {
         switch (state) {
             case PlanterState.Empty:
+                ItemStack stack = inventory.GetSelectedItemStack();
+                if (stack == null || stack.item == null || stack.item.itemUseType != ItemUseType.Plantable) break;
+                seed = stack.item;
+                inventory.ConsumeSelectedItem();
+                UnHighlight();
                 Debug.Log("You have planted a seed");
                 state = PlanterState.Growing;
+                StartCoroutine(GrowthTimer());
                 break;
             case PlanterState.Growing:
-                GrowthTimer();
                 Debug.Log("Still growing...");
                 break;
             case PlanterState.Harvestable:
                 state = PlanterState.Empty;
+                inventory.AddItem(seed.harvestResult, seed.harvestAmount);
+                Debug.Log("You harvested a plant");
                 break;
         }
     }
@@ -52,11 +61,12 @@ public class PlantSeed : MonoBehaviour, IInteractable {
     }
 
     public bool CanInteract() {
-        return state == PlanterState.Empty || state == PlanterState.Harvestable;
+        return state != PlanterState.Growing;
     }
 
     private IEnumerator GrowthTimer() {
         yield return new WaitForSeconds(seed.growthTime);
         state = PlanterState.Harvestable;
+        Debug.Log("A planter is now harvestable");
     }
 }

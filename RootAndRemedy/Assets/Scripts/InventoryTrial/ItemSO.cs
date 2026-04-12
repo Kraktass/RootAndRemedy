@@ -11,5 +11,9 @@ public class ItemSO : ScriptableObject {
     public GameObject handItemPrefab;
     public ItemUseType itemUseType;
     public float growthTime;
+    public ItemSO harvestResult;
+    public int harvestAmount;
+    public GameObject seedlingPrefab;
+    public GameObject plantPrefab;
 
 }

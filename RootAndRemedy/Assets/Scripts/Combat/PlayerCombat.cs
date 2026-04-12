@@ -11,62 +11,74 @@ public class PlayerCombat : MonoBehaviour {
     [SerializeField] private float turnSpeed = 10f;
 
     [Header("Throw Settings")]
-    [SerializeField] private Transform throwSpawn;          // spawn point for projectile
-    [SerializeField] private GameObject projectilePrefab;   // prefab with Rigidbody
-    [SerializeField, Tooltip("Random spin torque applied to projectile")]
-    private float throwRotation = 10f;
+    [SerializeField] private Transform throwSpawn;
+    [SerializeField] private GameObject projectilePrefab;
+    [SerializeField] private float throwRotation = 10f;
 
-    [Header("Ballistic (lands on reticle)")]
-    [SerializeField, Tooltip("Seconds of airtime per meter of horizontal distance")]
-    private float timePerMeter = 0.06f;            // 0.05–0.08 feels good
-    [SerializeField, Tooltip("Minimum total flight time (seconds)")]
-    private float minFlightTime = 0.30f;           // prevents snapping close up
-    [SerializeField, Tooltip("Maximum total flight time (seconds)")]
-    private float maxFlightTime = 1.20f;           // caps floaty long shots
-    [SerializeField, Tooltip("Extra upward bias added to computed velocity")]
-    private float extraUpBias = 0.0f;
+    [Header("Arc Shape")]
+    [SerializeField] private float arcHeight = 3.5f;
+
+    [Header("Arc Speed")]
+    [SerializeField] private float throwSpeedMultiplier = 1.5f;
 
     [Header("Arc Preview")]
-    [SerializeField] private LineRenderer arcLine;          // assign in inspector
-    [SerializeField, Tooltip("Number of points used for the arc line")]
-    private int arcPoints = 30;
-    [SerializeField, Tooltip("Time step between arc samples (s)")]
-    private float arcTimeStep = 0.05f;
-    [SerializeField, Tooltip("Layers the arc should stop at when previewing")]
-    private LayerMask arcCollisionMask;
+    [SerializeField] private LineRenderer arcLine;
+    [SerializeField] private int arcPoints = 30;
+    [SerializeField] private float arcTimeStep = 0.05f;
+    [SerializeField] private LayerMask arcCollisionMask;
+
+    [Header("Refs")]
+    [SerializeField] private Inventory inventory;
 
     private bool isAiming;
     private Vector3 lastAimPoint;
-    [SerializeField] Inventory inventory;
 
-
-    void Awake() {
+    private void Awake() {
         if (!cam) cam = Camera.main;
-        if (aimReticle) aimReticle.gameObject.SetActive(false);
-        if (arcLine) { arcLine.positionCount = 0; arcLine.enabled = false; }
+
+        if (aimReticle)
+            aimReticle.gameObject.SetActive(false);
+
+        if (arcLine) {
+            arcLine.positionCount = 0;
+            arcLine.enabled = false;
+        }
     }
 
-    // Called by Player Input (Send Messages) for the "Throw" action
+    // Input System (Send Messages)
     public void OnThrow(InputValue value) {
+        if (inventory == null) {
+            Debug.LogError("Inventory not assigned!");
+            return;
+        }
+
         ItemStack stack = inventory.GetSelectedItemStack();
-        if (stack == null || stack.item.itemUseType != ItemUseType.Throwable) return;
+
+        if (stack == null || stack.item == null)
+            return;
+
+        if (stack.item.itemUseType != ItemUseType.Throwable)
+            return;
+
+        if (stack.amount <= 0)
+            return;
+
         bool pressed = value.isPressed;
-        if (stack.amount > 0) {
-            if (pressed) {
+
+        if (pressed) {
+            if (!isAiming) {
                 StartAiming();
-                Debug.Log("Started Aiming");
             }
-            else {
+        }
+        else {
+            if (isAiming) {
                 StopAiming();
-                Debug.Log("Stopped Aiming");
                 inventory.ConsumeSelectedItem();
             }
         }
     }
 
-
-    void StartAiming() {
-        Debug.Log("Started Aiming");
+    private void StartAiming() {
         isAiming = true;
 
         if (aimReticle)
@@ -76,9 +88,8 @@ public class PlayerCombat : MonoBehaviour {
             arcLine.enabled = true;
     }
 
-    void StopAiming() {
-        if (isAiming)
-            FireProjectile();
+    private void StopAiming() {
+        FireProjectile();
 
         isAiming = false;
 
@@ -91,87 +102,122 @@ public class PlayerCombat : MonoBehaviour {
         }
     }
 
-    void FixedUpdate() {
-        if (!cam) return;
+    private void FixedUpdate() {
+        if (!isAiming || !cam)
+            return;
 
-        if (isAiming) {
-            // Update reticle position
-            Vector2 screenPos = Mouse.current != null
-                ? Mouse.current.position.ReadValue()
-                : (Vector2)Input.mousePosition;
+        Vector2 screenPos = Mouse.current != null
+            ? Mouse.current.position.ReadValue()
+            : (Vector2)Input.mousePosition;
 
-            if (Physics.Raycast(cam.ScreenPointToRay(screenPos),
-                                out var hit, 500f, groundMask, QueryTriggerInteraction.Ignore)) {
-                lastAimPoint = hit.point;
+        if (Physics.Raycast(cam.ScreenPointToRay(screenPos), out RaycastHit hit, 500f, groundMask, QueryTriggerInteraction.Ignore)) {
+            lastAimPoint = hit.point;
 
-                if (aimReticle) {
-                    aimReticle.position = hit.point + Vector3.up * hoverHeight;
-                    if (alignToSurface)
-                        aimReticle.rotation = Quaternion.FromToRotation(Vector3.up, hit.normal);
-                }
+            if (aimReticle) {
+                aimReticle.position = hit.point + Vector3.up * hoverHeight;
 
-                // Rotate player toward aim point (Y only)
-                Vector3 look = hit.point; look.y = transform.position.y;
-                Vector3 dir = look - transform.position;
-                if (dir.sqrMagnitude > 0.001f) {
-                    Quaternion target = Quaternion.LookRotation(dir);
-                    transform.rotation = Quaternion.Lerp(
-                        transform.rotation, target, turnSpeed * Time.fixedDeltaTime);
-                }
+                if (alignToSurface)
+                    aimReticle.rotation = Quaternion.FromToRotation(Vector3.up, hit.normal);
             }
 
-            // Update arc preview
-            if (arcLine && throwSpawn) {
-                Vector3 initVel = ComputeInitialVelocity();
-                DrawArc(throwSpawn.position, initVel);
+            // Temporary direct rotation.
+            // Later, pass this direction into your KCC movement script instead.
+            Vector3 look = hit.point;
+            look.y = transform.position.y;
+
+            Vector3 dir = look - transform.position;
+            if (dir.sqrMagnitude > 0.001f) {
+                Quaternion target = Quaternion.LookRotation(dir);
+                transform.rotation = Quaternion.Lerp(transform.rotation, target, turnSpeed * Time.fixedDeltaTime);
             }
+        }
+
+        if (arcLine && throwSpawn) {
+            Vector3 vel = ComputeInitialVelocity();
+            DrawArc(throwSpawn.position, vel);
+        }
+    }
+
+    private void SetLayerRecursively(GameObject obj, int layer) {
+        obj.layer = layer;
+
+        foreach (Transform child in obj.transform) {
+            SetLayerRecursively(child.gameObject, layer);
         }
     }
 
     private void FireProjectile() {
-        if (!projectilePrefab || !throwSpawn) return;
-
-        GameObject proj = Instantiate(projectilePrefab, throwSpawn.position, throwSpawn.rotation);
-
-        if (!proj.TryGetComponent<Rigidbody>(out var rb)) {
-            rb = proj.AddComponent<Rigidbody>();
-            rb.useGravity = true;
-            rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
+        if (!projectilePrefab) {
+            Debug.LogError("Projectile prefab missing!");
+            return;
         }
 
-        Vector3 initialVelocity = ComputeInitialVelocity();
-        rb.linearVelocity = initialVelocity;
-        if (throwRotation != 0f)
+        if (!throwSpawn) {
+            Debug.LogError("Throw spawn missing!");
+            return;
+        }
+
+        GameObject proj = Instantiate(projectilePrefab, throwSpawn.position, Quaternion.identity);
+
+        int projectileLayer = LayerMask.NameToLayer("PlayerProjectile");
+        if (projectileLayer != -1) {
+            SetLayerRecursively(proj, projectileLayer);
+        }
+        else {
+            Debug.LogWarning("Layer 'PlayerProjectile' does not exist.");
+        }
+
+        if (!proj.TryGetComponent<Rigidbody>(out Rigidbody rb)) {
+            rb = proj.AddComponent<Rigidbody>();
+        }
+
+        rb.isKinematic = false;
+        rb.useGravity = true;
+        rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
+
+        Vector3 velocity = ComputeInitialVelocity();
+        rb.linearVelocity = velocity;
+
+        float gravityMultiplier = throwSpeedMultiplier * throwSpeedMultiplier;
+
+        ProjectileCustomGravity customGravity = proj.GetComponent<ProjectileCustomGravity>();
+        if (customGravity == null) {
+            customGravity = proj.AddComponent<ProjectileCustomGravity>();
+        }
+
+        customGravity.SetGravityMultiplier(gravityMultiplier);
+
+        if (throwRotation != 0f) {
             rb.AddTorque(Random.onUnitSphere * throwRotation, ForceMode.Impulse);
+        }
     }
 
-    // ---------------------------------------------------------------------
-    // ComputeInitialVelocity: solves for velocity that lands on lastAimPoint
-    // ---------------------------------------------------------------------
     private Vector3 ComputeInitialVelocity() {
         Vector3 start = throwSpawn.position;
         Vector3 target = lastAimPoint;
-        Vector3 delta = target - start;
-
-        // Horizontal distance
-        Vector3 deltaXZ = new Vector3(delta.x, 0f, delta.z);
-        float horizDist = deltaXZ.magnitude;
-
-        // Choose a flight time based on distance
-        float t = Mathf.Clamp(horizDist * timePerMeter, minFlightTime, maxFlightTime);
-        if (t < 1e-3f) t = minFlightTime;
-
-        // Solve for initial velocity
         Vector3 gravity = Physics.gravity;
-        Vector3 v = (delta - 0.5f * gravity * (t * t)) / t;
+        float g = Mathf.Abs(gravity.y);
 
-        if (extraUpBias != 0f) v += Vector3.up * extraUpBias;
-        return v;
+        float apexY = Mathf.Max(start.y, target.y) + arcHeight;
+        float rise = Mathf.Max(0.01f, apexY - start.y);
+        float fall = Mathf.Max(0.01f, apexY - target.y);
+
+        float timeUp = Mathf.Sqrt(2f * rise / g);
+        float timeDown = Mathf.Sqrt(2f * fall / g);
+        float totalTime = timeUp + timeDown;
+
+        Vector3 deltaXZ = new Vector3(target.x - start.x, 0f, target.z - start.z);
+        Vector3 horizontalVelocity = deltaXZ / totalTime;
+        float verticalVelocity = g * timeUp;
+
+        Vector3 baseVelocity = horizontalVelocity + Vector3.up * verticalVelocity;
+
+        return baseVelocity * throwSpeedMultiplier;
     }
 
-    // Draws a parabolic arc using physics integration
     private void DrawArc(Vector3 startPos, Vector3 startVel) {
-        if (!arcLine) return;
+        if (!arcLine)
+            return;
 
         arcLine.positionCount = arcPoints;
 
@@ -181,24 +227,25 @@ public class PlayerCombat : MonoBehaviour {
         for (int i = 0; i < arcPoints; i++) {
             arcLine.SetPosition(i, pos);
 
-            Vector3 step = vel * arcTimeStep + 0.5f * Physics.gravity * (arcTimeStep * arcTimeStep);
-            if (Physics.Raycast(pos, step.normalized, out var hit, step.magnitude, arcCollisionMask, QueryTriggerInteraction.Ignore)) {
+            Vector3 step = vel * arcTimeStep + 0.5f * Physics.gravity * (throwSpeedMultiplier * throwSpeedMultiplier) * (arcTimeStep * arcTimeStep);
+
+            if (Physics.Raycast(pos, step.normalized, out RaycastHit hit, step.magnitude, arcCollisionMask, QueryTriggerInteraction.Ignore)) {
                 arcLine.positionCount = i + 1;
                 arcLine.SetPosition(i, hit.point);
-                return; // stop at collision
+                return;
             }
 
             pos += step;
-            vel += Physics.gravity * arcTimeStep;
+            vel += Physics.gravity * (throwSpeedMultiplier * throwSpeedMultiplier) * arcTimeStep;
         }
     }
 
 #if UNITY_EDITOR
-    void OnValidate() {
+    private void OnValidate() {
         if (arcPoints < 2) arcPoints = 2;
         if (arcTimeStep <= 0f) arcTimeStep = 0.01f;
-        if (minFlightTime <= 0f) minFlightTime = 0.1f;
-        if (maxFlightTime < minFlightTime) maxFlightTime = minFlightTime;
+        if (arcHeight < 0.1f) arcHeight = 0.1f;
+        if (throwSpeedMultiplier < 0.1f) throwSpeedMultiplier = 0.1f;
     }
 #endif
 }

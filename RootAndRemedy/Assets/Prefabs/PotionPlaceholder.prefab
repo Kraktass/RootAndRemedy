@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 9093338360325031264}
   - component: {fileID: 5141883834158908108}
   - component: {fileID: 6753677433556574021}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: PotionNeckModel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -61,6 +61,8 @@ MeshRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -82,9 +84,11 @@ MeshRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!1 &4940411926760492067
 GameObject:
@@ -98,7 +102,7 @@ GameObject:
   - component: {fileID: 1471496640920387676}
   - component: {fileID: 5104761924243373026}
   - component: {fileID: -2560037209317171535}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: PotionPlaceholder
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -149,7 +153,7 @@ Rigidbody:
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 0
-  m_CollisionDetection: 0
+  m_CollisionDetection: 1
 --- !u!135 &5104761924243373026
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -195,7 +199,7 @@ GameObject:
   - component: {fileID: 5898861736467394188}
   - component: {fileID: 928539342422088551}
   - component: {fileID: 8600295562157772630}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: PotionBodyModel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -245,6 +249,8 @@ MeshRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -266,9 +272,11 @@ MeshRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!1 &8671413339194370649
 GameObject:
@@ -281,7 +289,7 @@ GameObject:
   - component: {fileID: 3847833574845197793}
   - component: {fileID: 2849900703372514909}
   - component: {fileID: 1893564007801318370}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: PotionTopModel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -331,6 +339,8 @@ MeshRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -352,7 +362,9 @@ MeshRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
-
 public class Inventory : MonoBehaviour {
 
     [SerializeField] private Color hotbarNormalColor = Color.white;
@@ -21,14 +20,6 @@ public class Inventory : MonoBehaviour {
 
     public Image dragIcon;
 
-
-    public float pickupRange;
-    [SerializeField] float raycastDistance = 100f;
-    public Material highlightMaterial;
-
-    Material originalMaterial;
-    Renderer lookedAtRenderer = null;
-
     List<Slot> inventorySlots = new List<Slot>();
     List<Slot> allSlots = new List<Slot>();
     List<Slot> hotbarSlots = new List<Slot>();
@@ -38,13 +29,10 @@ public class Inventory : MonoBehaviour {
 
     public bool IsOpen => container != null && container.activeSelf;
 
-    [SerializeField] Transform player;
-    [SerializeField] private LayerMask pickupMask = ~0;
     Vector2 pointerScreenPos;
 
     public int selectedHotbarIndex = 0;
     public int HotbarAmount => hotbarSlots.Count;
-
 
     void Awake() {
         if (!eventSystem)
@@ -55,6 +43,7 @@ public class Inventory : MonoBehaviour {
 
         if (!raycaster)
             Debug.LogError("Inventory: No GraphicRaycaster found. Is this Inventory under a Canvas?");
+
         inventorySlots.Clear();
         hotbarSlots.Clear();
         allSlots.Clear();
@@ -71,7 +60,6 @@ public class Inventory : MonoBehaviour {
     }
 
     void Update() {
-        DetectLookedAtItem();
         if (isDragging) {
             UpdateDragItemPosition();
         }
@@ -84,13 +72,11 @@ public class Inventory : MonoBehaviour {
     public void SelectNextHotbarSlot() {
         selectedHotbarIndex = (selectedHotbarIndex + 1) % HotbarAmount;
         HighlightHotbarSlot();
-        GetSelectedItemStack();
     }
 
     public void SelectPreviousHotbarSlot() {
         selectedHotbarIndex = (selectedHotbarIndex - 1 + HotbarAmount) % HotbarAmount;
         HighlightHotbarSlot();
-        GetSelectedItemStack();
     }
 
     public void HighlightHotbarSlot() {
@@ -105,6 +91,7 @@ public class Inventory : MonoBehaviour {
         if (!slot.HasItem()) {
             return null;
         }
+
         return new ItemStack {
             item = slot.GetItem(),
             amount = slot.GetAmount()
@@ -119,7 +106,6 @@ public class Inventory : MonoBehaviour {
     }
 
     public void AddItem(ItemSO itemToAdd, int amount) {
-
         int remaining = amount;
 
         foreach (Slot slot in hotbarSlots) {
@@ -182,7 +168,6 @@ public class Inventory : MonoBehaviour {
 
         if (remaining > 0)
             Debug.Log($"Inventory is full, could not add {remaining} of {itemToAdd.itemName}");
-
     }
 
     private Slot GetSlotUnderPointer() {
@@ -204,10 +189,8 @@ public class Inventory : MonoBehaviour {
     public void OnPrimaryClick() {
         Slot hovered = GetSlotUnderPointer();
         if (!IsOpen) return;
-
         if (hovered == null) return;
 
-        // If not currently holding/dragging: pick up from clicked slot
         if (!isDragging) {
             if (!hovered.HasItem()) return;
 
@@ -217,13 +200,10 @@ public class Inventory : MonoBehaviour {
             dragIcon.sprite = hovered.GetItem().itemIcon;
             dragIcon.color = new Color(1, 1, 1, 0.5f);
             dragIcon.enabled = true;
-
-            // Optional: snap icon immediately
             dragIcon.transform.position = pointerScreenPos;
             return;
         }
 
-        // If currently holding/dragging: place into clicked slot
         HandleDrop(draggedSlot, hovered);
 
         dragIcon.enabled = false;
@@ -234,7 +214,6 @@ public class Inventory : MonoBehaviour {
     void HandleDrop(Slot from, Slot to) {
         if (from == to) return;
 
-        //Stacking
         if (to.HasItem() && to.GetItem() == from.GetItem()) {
             int max = to.GetItem().maxStackSize;
             int space = max - to.GetAmount();
@@ -252,7 +231,6 @@ public class Inventory : MonoBehaviour {
             }
         }
 
-        //Different Item
         if (to.HasItem()) {
             ItemSO tempItem = to.GetItem();
             int tempAmount = to.GetAmount();
@@ -262,7 +240,6 @@ public class Inventory : MonoBehaviour {
             return;
         }
 
-        //Empty Slot
         to.SetItem(from.GetItem(), from.GetAmount());
         from.ClearSlot();
     }
@@ -274,47 +251,5 @@ public class Inventory : MonoBehaviour {
 
     public void SetPointerPosition(Vector2 screenPos) {
         pointerScreenPos = screenPos;
-    }
-
-
-    public void TryPickup() {
-        if (lookedAtRenderer == null) return;
-
-        Item item = lookedAtRenderer.GetComponent<Item>();
-        if (item == null) return;
-
-        if (player == null) {
-            Debug.LogError("Inventory.TryPickup: Player Transform is not assigned.");
-            return;
-        }
-
-        float dist = Vector3.Distance(player.position, item.transform.position);
-        Debug.Log($"Pickup check: player={player?.name}, item={item.name}, dist={dist}, range={pickupRange}");
-        if (dist > pickupRange)
-            return;
-
-        AddItem(item.item, item.amount);
-        Destroy(item.gameObject);
-    }
-
-    void DetectLookedAtItem() {
-        if (lookedAtRenderer != null) {
-            lookedAtRenderer.material = originalMaterial;
-            lookedAtRenderer = null;
-            originalMaterial = null;
-        }
-
-        Ray ray = Camera.main.ScreenPointToRay(pointerScreenPos);
-        if (Physics.Raycast(ray, out RaycastHit hit, raycastDistance, pickupMask)) {
-            Item item = hit.collider.GetComponent<Item>();
-            if (item != null) {
-                Renderer rend = item.GetComponent<Renderer>();
-                if (rend != null) {
-                    originalMaterial = rend.material;
-                    rend.material = highlightMaterial;
-                    lookedAtRenderer = rend;
-                }
-            }
-        }
     }
 }
