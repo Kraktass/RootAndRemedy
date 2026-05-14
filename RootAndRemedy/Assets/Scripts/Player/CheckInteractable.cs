@@ -19,19 +19,21 @@ public class CheckInteractable : MonoBehaviour {
     }
 
     void OnTriggerEnter(Collider other) {
-        if (other.TryGetComponent<IInteractable>(out var interactable)) {
-            if (interactable == null) return;
+        IInteractable interactable = other.GetComponentInParent<IInteractable>();
+        if (interactable == null) return;
+        if (!interactables.Contains(interactable))
             interactables.Add(interactable);
-            currentInteractable = interactable;
-        }
     }
 
     void OnTriggerExit(Collider other) {
-        if (!other.TryGetComponent<IInteractable>(out var interactable)) return;
+        IInteractable interactable = other.GetComponentInParent<IInteractable>();
+        if (interactable == null) return;
         interactables.Remove(interactable);
-        if (interactable == currentInteractable) {
+        if (ReferenceEquals(interactable, currentInteractable))
             currentInteractable = null;
-        }
+        if (ReferenceEquals(interactable, lastHighlighted))
+            lastHighlighted.UnHighlight();
+        lastHighlighted = null;
         SelectNearest();
     }
 

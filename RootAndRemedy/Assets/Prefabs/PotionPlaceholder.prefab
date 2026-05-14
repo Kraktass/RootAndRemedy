@@ -102,6 +102,7 @@ GameObject:
   - component: {fileID: 1471496640920387676}
   - component: {fileID: 5104761924243373026}
   - component: {fileID: -2560037209317171535}
+  - component: {fileID: 5773148681762987265}
   m_Layer: 8
   m_Name: PotionPlaceholder
   m_TagString: Untagged
@@ -188,6 +189,25 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   destroyDelay: 0.05
+--- !u!114 &5773148681762987265
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4940411926760492067}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 00149d0160542214ab172cea156cd6b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MagicArcProjectile
+  duration: 0.45
+  arcHeight: 3
+  rotateAlongPath: 0
+  rotationFollowSpeed: 12
+  addSpin: 1
+  spinAxis: {x: 1, y: 0.25, z: 0}
+  spinSpeed: 7.17
 --- !u!1 &5739219613413841692
 GameObject:
   m_ObjectHideFlags: 0

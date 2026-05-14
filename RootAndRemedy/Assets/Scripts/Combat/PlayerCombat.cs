@@ -13,19 +13,14 @@ public class PlayerCombat : MonoBehaviour {
     [Header("Throw Settings")]
     [SerializeField] private Transform throwSpawn;
     [SerializeField] private GameObject projectilePrefab;
-    [SerializeField] private float throwRotation = 10f;
 
-    [Header("Arc Shape")]
-    [SerializeField] private float arcHeight = 3.5f;
-
-    [Header("Arc Speed")]
-    [SerializeField] private float throwSpeedMultiplier = 1.5f;
+    [Header("Magic Arc")]
+    [SerializeField] private float projectileTravelTime = 0.45f;
+    [SerializeField] private float projectileArcHeight = 3f;
 
     [Header("Arc Preview")]
     [SerializeField] private LineRenderer arcLine;
     [SerializeField] private int arcPoints = 30;
-    [SerializeField] private float arcTimeStep = 0.05f;
-    [SerializeField] private LayerMask arcCollisionMask;
 
     [Header("Refs")]
     [SerializeField] private Inventory inventory;
@@ -45,7 +40,6 @@ public class PlayerCombat : MonoBehaviour {
         }
     }
 
-    // Input System (Send Messages)
     public void OnThrow(InputValue value) {
         if (inventory == null) {
             Debug.LogError("Inventory not assigned!");
@@ -120,8 +114,6 @@ public class PlayerCombat : MonoBehaviour {
                     aimReticle.rotation = Quaternion.FromToRotation(Vector3.up, hit.normal);
             }
 
-            // Temporary direct rotation.
-            // Later, pass this direction into your KCC movement script instead.
             Vector3 look = hit.point;
             look.y = transform.position.y;
 
@@ -133,16 +125,7 @@ public class PlayerCombat : MonoBehaviour {
         }
 
         if (arcLine && throwSpawn) {
-            Vector3 vel = ComputeInitialVelocity();
-            DrawArc(throwSpawn.position, vel);
-        }
-    }
-
-    private void SetLayerRecursively(GameObject obj, int layer) {
-        obj.layer = layer;
-
-        foreach (Transform child in obj.transform) {
-            SetLayerRecursively(child.gameObject, layer);
+            DrawArcPreview(throwSpawn.position, lastAimPoint);
         }
     }
 
@@ -159,93 +142,39 @@ public class PlayerCombat : MonoBehaviour {
 
         GameObject proj = Instantiate(projectilePrefab, throwSpawn.position, Quaternion.identity);
 
-        int projectileLayer = LayerMask.NameToLayer("PlayerProjectile");
-        if (projectileLayer != -1) {
-            SetLayerRecursively(proj, projectileLayer);
-        }
-        else {
-            Debug.LogWarning("Layer 'PlayerProjectile' does not exist.");
+        MagicArcProjectile arcProjectile = proj.GetComponent<MagicArcProjectile>();
+        if (arcProjectile == null) {
+            arcProjectile = proj.AddComponent<MagicArcProjectile>();
         }
 
-        if (!proj.TryGetComponent<Rigidbody>(out Rigidbody rb)) {
-            rb = proj.AddComponent<Rigidbody>();
-        }
-
-        rb.isKinematic = false;
-        rb.useGravity = true;
-        rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
-
-        Vector3 velocity = ComputeInitialVelocity();
-        rb.linearVelocity = velocity;
-
-        float gravityMultiplier = throwSpeedMultiplier * throwSpeedMultiplier;
-
-        ProjectileCustomGravity customGravity = proj.GetComponent<ProjectileCustomGravity>();
-        if (customGravity == null) {
-            customGravity = proj.AddComponent<ProjectileCustomGravity>();
-        }
-
-        customGravity.SetGravityMultiplier(gravityMultiplier);
-
-        if (throwRotation != 0f) {
-            rb.AddTorque(Random.onUnitSphere * throwRotation, ForceMode.Impulse);
-        }
+        arcProjectile.Launch(
+            throwSpawn.position,
+            lastAimPoint,
+            projectileTravelTime,
+            projectileArcHeight
+        );
     }
 
-    private Vector3 ComputeInitialVelocity() {
-        Vector3 start = throwSpawn.position;
-        Vector3 target = lastAimPoint;
-        Vector3 gravity = Physics.gravity;
-        float g = Mathf.Abs(gravity.y);
-
-        float apexY = Mathf.Max(start.y, target.y) + arcHeight;
-        float rise = Mathf.Max(0.01f, apexY - start.y);
-        float fall = Mathf.Max(0.01f, apexY - target.y);
-
-        float timeUp = Mathf.Sqrt(2f * rise / g);
-        float timeDown = Mathf.Sqrt(2f * fall / g);
-        float totalTime = timeUp + timeDown;
-
-        Vector3 deltaXZ = new Vector3(target.x - start.x, 0f, target.z - start.z);
-        Vector3 horizontalVelocity = deltaXZ / totalTime;
-        float verticalVelocity = g * timeUp;
-
-        Vector3 baseVelocity = horizontalVelocity + Vector3.up * verticalVelocity;
-
-        return baseVelocity * throwSpeedMultiplier;
-    }
-
-    private void DrawArc(Vector3 startPos, Vector3 startVel) {
+    private void DrawArcPreview(Vector3 start, Vector3 target) {
         if (!arcLine)
             return;
 
         arcLine.positionCount = arcPoints;
 
-        Vector3 pos = startPos;
-        Vector3 vel = startVel;
-
         for (int i = 0; i < arcPoints; i++) {
+            float t = i / (float)(arcPoints - 1);
+            Vector3 flat = Vector3.Lerp(start, target, t);
+            float arc = projectileArcHeight * 4f * t * (1f - t);
+            Vector3 pos = flat + Vector3.up * arc;
             arcLine.SetPosition(i, pos);
-
-            Vector3 step = vel * arcTimeStep + 0.5f * Physics.gravity * (throwSpeedMultiplier * throwSpeedMultiplier) * (arcTimeStep * arcTimeStep);
-
-            if (Physics.Raycast(pos, step.normalized, out RaycastHit hit, step.magnitude, arcCollisionMask, QueryTriggerInteraction.Ignore)) {
-                arcLine.positionCount = i + 1;
-                arcLine.SetPosition(i, hit.point);
-                return;
-            }
-
-            pos += step;
-            vel += Physics.gravity * (throwSpeedMultiplier * throwSpeedMultiplier) * arcTimeStep;
         }
     }
 
 #if UNITY_EDITOR
     private void OnValidate() {
         if (arcPoints < 2) arcPoints = 2;
-        if (arcTimeStep <= 0f) arcTimeStep = 0.01f;
-        if (arcHeight < 0.1f) arcHeight = 0.1f;
-        if (throwSpeedMultiplier < 0.1f) throwSpeedMultiplier = 0.1f;
+        if (projectileTravelTime < 0.01f) projectileTravelTime = 0.01f;
+        if (projectileArcHeight < 0f) projectileArcHeight = 0f;
     }
 #endif
 }
