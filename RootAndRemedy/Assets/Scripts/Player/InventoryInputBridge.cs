@@ -1,11 +1,13 @@
 
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UIElements.Experimental;
 
 
 
 public class InventoryInputBridge : MonoBehaviour {
     [SerializeField] Inventory inventory;
+    [SerializeField] AlchemyUI alchemyUI;
 
     public void OnToggleInventory(InputValue _) {
         inventory.ToggleInventory();
@@ -15,10 +17,6 @@ public class InventoryInputBridge : MonoBehaviour {
 
         Vector2 pos = value.Get<Vector2>();
         inventory.SetPointerPosition(pos);
-    }
-
-    public void OnInteract() {
-        if (inventory.IsOpen) return;
     }
 
     public void OnClick(InputValue value) {
@@ -40,6 +38,17 @@ public class InventoryInputBridge : MonoBehaviour {
         }
         else if (scrollDirection.y < -0.5f) {
             inventory.SelectNextHotbarSlot();
+        }
+    }
+
+    public void OnAlchemyUIScroll(InputValue value) {
+        if (!alchemyUI.isOpen) return;
+        Vector2 scrollDirection = value.Get<Vector2>();
+        if (scrollDirection.y > 0.5f) {
+            alchemyUI.SelectPreviousEntry();
+        }
+        else if (scrollDirection.y < -0.5f) {
+            alchemyUI.SelectNextEntry();
         }
     }
 }

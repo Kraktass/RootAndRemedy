@@ -4,6 +4,7 @@ public class BrewPotion : MonoBehaviour, IInteractable {
 
     [SerializeField] Color highlightEmission = Color.green;
     [SerializeField] float highlightIntensity = 0.5f;
+    [SerializeField] AlchemyUI alchemyUI;
 
     Renderer _renderer;
     Material _materialInstance;
@@ -15,10 +16,12 @@ public class BrewPotion : MonoBehaviour, IInteractable {
         _materialInstance = _renderer.material;
         _originalEmissionColor = _materialInstance.GetColor("_EmissionColor");
         _emissionWasEnabled = _materialInstance.IsKeywordEnabled("_EMISSION");
+        alchemyUI.gameObject.SetActive(false);
     }
 
     public void Interact() {
         Debug.Log("Interacted with:" + this.gameObject.name);
+        alchemyUI.gameObject.SetActive(!alchemyUI.gameObject.activeSelf);
     }
 
     public void Highlight() {
@@ -38,10 +41,6 @@ public class BrewPotion : MonoBehaviour, IInteractable {
 
     public bool CanInteract() {
         return true;
-    }
-
-    public void UseAlchemyTable() {
-
     }
 
 }
