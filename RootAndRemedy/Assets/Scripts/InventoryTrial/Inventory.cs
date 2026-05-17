@@ -65,6 +65,25 @@ public class Inventory : MonoBehaviour {
         }
     }
 
+    public List<ItemStack> GetAllIngredientItems() {
+
+        List<ItemStack> ingredientList = new List<ItemStack>();
+
+        foreach (Slot slot in allSlots) {
+            if (!slot.HasItem()) continue;
+
+            ItemSO item = slot.GetItem();
+
+            if (item.itemUseType != ItemUseType.Plantable) continue;
+
+            ingredientList.Add(new ItemStack {
+                item = item,
+                amount = slot.GetAmount()
+            });
+        }
+        return ingredientList;
+    }
+
     public void ToggleInventory() {
         container.SetActive(!container.activeSelf);
     }

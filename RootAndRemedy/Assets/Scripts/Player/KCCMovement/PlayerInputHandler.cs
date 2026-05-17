@@ -1,13 +1,11 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class PlayerInputHandler : MonoBehaviour {
-    public KCCPlayerMovement character;
+    [SerializeField] private KCCPlayerMovement character;
 
-    void Update() {
-        float x = Input.GetAxisRaw("Horizontal");
-        float z = Input.GetAxisRaw("Vertical");
-
-        character.SetInputs(new Vector2(x, z));
+    public void OnMove(InputValue value) {
+        Vector2 input = value.Get<Vector2>();
+        character.SetInputs(input);
     }
 }
-
