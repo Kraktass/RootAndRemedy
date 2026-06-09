@@ -10,27 +10,53 @@ public class AlchemyUI : MonoBehaviour {
     [SerializeField] Inventory inventory;
     [SerializeField] IngredientEntry ingredientEntry;
     [SerializeField] Transform ingredientPanel;
+    [SerializeField] BrewingSlot brewingSlotOne;
+    [SerializeField] BrewingSlot brewingSlotTwo;
+
 
     List<IngredientEntry> ingredientEntries = new List<IngredientEntry>();
+    BrewingSlot[] brewingSlots;
 
+    int activeBrewingSlotIndex = 0;
     int selectedIngredientIndex = 0;
     int entryCount => ingredientEntries.Count;
-
     public bool isOpen => gameObject.activeSelf;
 
     void Awake() {
         ingredientEntries.Clear();
         ingredientEntries.AddRange(ingredientListPanel.GetComponentsInChildren<IngredientEntry>(true));
         HighlightIngredientEntryList();
+        brewingSlots = new[] { brewingSlotOne, brewingSlotTwo };
+    }
+
+    private void ClearIngredientEntries() {
+        foreach (IngredientEntry entry in ingredientEntries) {
+            if (entry != null)
+                Destroy(entry.gameObject);
+        }
+
+        ingredientEntries.Clear();
+    }
+
+    public void SetItem() {
+        IngredientEntry selectedEntry = ingredientEntries[selectedIngredientIndex];
+        ItemSO selectedItem = selectedEntry.GetItem();
+        Debug.Log("Selected: " + selectedItem.itemName);
+        brewingSlots[activeBrewingSlotIndex].SetItem(selectedItem);
+        activeBrewingSlotIndex++;
     }
 
 
     void OnEnable() {
+        ClearIngredientEntries();
         List<ItemStack> ingredients = inventory.GetAllIngredientItems();
         foreach (ItemStack item in ingredients) {
             IngredientEntry entry = Instantiate(ingredientEntry, ingredientListPanel);
             entry.SetData(item);
-
+            ingredientEntries.Add(entry);
+        }
+        if (ingredients.Count > 0) {
+            HighlightIngredientEntryList();
         }
     }
 
@@ -43,11 +69,13 @@ public class AlchemyUI : MonoBehaviour {
     }
 
     public void SelectPreviousEntry() {
+        if (entryCount == 0) return;
         selectedIngredientIndex = (selectedIngredientIndex - 1 + entryCount) % entryCount;
         HighlightIngredientEntryList();
     }
 
     public void SelectNextEntry() {
+        if (entryCount == 0) return;
         selectedIngredientIndex = (selectedIngredientIndex + 1) % entryCount;
         HighlightIngredientEntryList();
     }

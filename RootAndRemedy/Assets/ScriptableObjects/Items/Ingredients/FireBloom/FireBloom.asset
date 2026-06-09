@@ -17,7 +17,7 @@ MonoBehaviour:
   maxStackSize: 64
   itemPrefab: {fileID: 0}
   handItemPrefab: {fileID: 0}
-  itemUseType: 0
+  itemUseType: 1
   growthTime: 0
   harvestResult: {fileID: 0}
   harvestAmount: 3

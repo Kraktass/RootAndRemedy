@@ -1,7 +1,6 @@
 
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.UIElements.Experimental;
 
 
 
@@ -50,5 +49,9 @@ public class InventoryInputBridge : MonoBehaviour {
         else if (scrollDirection.y < -0.5f) {
             alchemyUI.SelectNextEntry();
         }
+    }
+
+    public void OnAlchemyInteract(InputValue value) {
+        alchemyUI.SetItem();
     }
 }

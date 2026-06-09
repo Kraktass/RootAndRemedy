@@ -76,10 +76,22 @@ public class Inventory : MonoBehaviour {
 
             if (item.itemUseType != ItemUseType.Plantable) continue;
 
-            ingredientList.Add(new ItemStack {
-                item = item,
-                amount = slot.GetAmount()
-            });
+            bool found = false;
+
+            foreach (ItemStack ingredientStack in ingredientList) {
+                if (ingredientStack.item == item) {
+                    ingredientStack.amount += slot.GetAmount();
+                    found = true;
+                }
+            }
+
+            if (!found) {
+                ingredientList.Add(new ItemStack {
+                    item = item,
+                    amount = slot.GetAmount()
+                });
+            }
+
         }
         return ingredientList;
     }

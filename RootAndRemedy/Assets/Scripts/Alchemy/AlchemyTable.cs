@@ -20,7 +20,6 @@ public class BrewPotion : MonoBehaviour, IInteractable {
     }
 
     public void Interact() {
-        Debug.Log("Interacted with:" + this.gameObject.name);
         alchemyUI.gameObject.SetActive(!alchemyUI.gameObject.activeSelf);
     }
 
