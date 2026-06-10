@@ -22,6 +22,7 @@ public class AlchemyUI : MonoBehaviour {
     int entryCount => ingredientEntries.Count;
     public bool isOpen => gameObject.activeSelf;
 
+
     void Awake() {
         ingredientEntries.Clear();
         ingredientEntries.AddRange(ingredientListPanel.GetComponentsInChildren<IngredientEntry>(true));
@@ -38,15 +39,6 @@ public class AlchemyUI : MonoBehaviour {
         ingredientEntries.Clear();
     }
 
-    public void SetItem() {
-        IngredientEntry selectedEntry = ingredientEntries[selectedIngredientIndex];
-        ItemSO selectedItem = selectedEntry.GetItem();
-        Debug.Log("Selected: " + selectedItem.itemName);
-        brewingSlots[activeBrewingSlotIndex].SetItem(selectedItem);
-        activeBrewingSlotIndex++;
-    }
-
-
     void OnEnable() {
         ClearIngredientEntries();
         List<ItemStack> ingredients = inventory.GetAllIngredientItems();
@@ -59,6 +51,29 @@ public class AlchemyUI : MonoBehaviour {
             HighlightIngredientEntryList();
         }
     }
+
+    public void SetItem() {
+        IngredientEntry selectedEntry = ingredientEntries[selectedIngredientIndex];
+        ItemSO selectedItem = selectedEntry.GetItem();
+        Debug.Log("Selected: " + selectedItem.itemName);
+        brewingSlots[activeBrewingSlotIndex].SetItem(selectedItem);
+        if (activeBrewingSlotIndex == 0) {
+            activeBrewingSlotIndex++;
+        }
+        else {
+            activeBrewingSlotIndex--;
+        }
+    }
+
+    public void BrewPotion() {
+        if (brewingSlotOne.item.itemName == "Fire Seed" && brewingSlotTwo.item.itemName == "Fire Seed") {
+            Debug.Log("Created a fire potion");
+        }
+        inventory.ConsumeItem(brewingSlotOne.item, 1);
+        inventory.ConsumeItem(brewingSlotTwo.item, 1);
+    }
+
+
 
     void HighlightIngredientEntryList() {
         for (int i = 0; i < ingredientEntries.Count; i++) {

@@ -113,6 +113,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "BrewPotion",
+                    "type": "Button",
+                    "id": "d806173d-07f7-469d-8f07-78bdb481efb2",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -377,6 +386,17 @@
                     "processors": "",
                     "groups": "",
                     "action": "AlchemyInteract",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "12da319e-751e-4fbd-929c-3441ba3f3046",
+                    "path": "<Keyboard>/b",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "BrewPotion",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

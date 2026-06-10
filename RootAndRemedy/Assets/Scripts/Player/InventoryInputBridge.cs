@@ -51,7 +51,11 @@ public class InventoryInputBridge : MonoBehaviour {
         }
     }
 
-    public void OnAlchemyInteract(InputValue value) {
+    public void OnAlchemyInteract(InputValue _) {
         alchemyUI.SetItem();
+    }
+
+    public void OnBrewPotion(InputValue _) {
+        alchemyUI.BrewPotion();
     }
 }

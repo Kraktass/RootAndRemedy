@@ -136,6 +136,26 @@ public class Inventory : MonoBehaviour {
         }
     }
 
+    public void ConsumeItem(ItemSO item, int amount) {
+        int remainingAmount = amount;
+        foreach (Slot slot in allSlots) {
+            if (!slot.HasItem()) continue;
+            if (slot.GetItem() == item) {
+                if (slot.GetAmount() >= remainingAmount) {
+                    slot.RemoveAmount(remainingAmount);
+                    remainingAmount = 0;
+                    return;
+                }
+                else {
+                    int slotAmount = slot.GetAmount();
+                    slot.RemoveAmount(slotAmount);
+                    remainingAmount -= slotAmount;
+                    slot.ClearSlot();
+                }
+            }
+        }
+    }
+
     public void AddItem(ItemSO itemToAdd, int amount) {
         int remaining = amount;
 
