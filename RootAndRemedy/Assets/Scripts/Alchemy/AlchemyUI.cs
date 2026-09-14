@@ -12,11 +12,13 @@ public class AlchemyUI : MonoBehaviour {
     [SerializeField] Transform ingredientPanel;
     [SerializeField] BrewingSlot brewingSlotOne;
     [SerializeField] BrewingSlot brewingSlotTwo;
+    [SerializeField] Slot resultSlot;
+    [SerializeField] PotionRecipeDatabase potionRecipeDatabase;
 
 
     List<IngredientEntry> ingredientEntries = new List<IngredientEntry>();
-    BrewingSlot[] brewingSlots;
 
+    BrewingSlot[] brewingSlots;
     int activeBrewingSlotIndex = 0;
     int selectedIngredientIndex = 0;
     int entryCount => ingredientEntries.Count;
@@ -40,6 +42,10 @@ public class AlchemyUI : MonoBehaviour {
     }
 
     void OnEnable() {
+        RefreshIngredientList();
+    }
+
+    void RefreshIngredientList() {
         ClearIngredientEntries();
         List<ItemStack> ingredients = inventory.GetAllIngredientItems();
         foreach (ItemStack item in ingredients) {
@@ -66,11 +72,34 @@ public class AlchemyUI : MonoBehaviour {
     }
 
     public void BrewPotion() {
-        if (brewingSlotOne.item.itemName == "Fire Seed" && brewingSlotTwo.item.itemName == "Fire Seed") {
-            Debug.Log("Created a fire potion");
+        ItemSO potionResult = potionRecipeDatabase.GetPotion(
+            brewingSlotOne.item,
+            brewingSlotTwo.item
+        );
+
+        if (potionResult == null)
+            return;
+
+        if (resultSlot.HasItem() && resultSlot.GetItem() != potionResult)
+            return;
+
+        if (!resultSlot.HasItem()) {
+            resultSlot.SetItem(potionResult, 1);
         }
+        else {
+            resultSlot.AddAmount(1);
+        }
+
         inventory.ConsumeItem(brewingSlotOne.item, 1);
         inventory.ConsumeItem(brewingSlotTwo.item, 1);
+        RefreshIngredientList();
+        Debug.Log("U brewed: " + potionResult.itemName);
+    }
+    public void TakeResult() {
+        ItemSO potionResult = resultSlot.GetItem();
+        int potionAmount = resultSlot.GetAmount();
+        inventory.AddItem(potionResult, potionAmount);
+        resultSlot.ClearSlot();
     }
 
 

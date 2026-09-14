@@ -14,6 +14,10 @@ public class MagicArcProjectile : MonoBehaviour {
     [SerializeField] private Vector3 spinAxis = new Vector3(1f, 0.25f, 0f);
     [SerializeField] private float spinSpeed = 360f;
 
+
+    [Header("Explosion")]
+    [SerializeField] PotionExplosion potionExplosion;
+
     private Vector3 startPoint;
     private Vector3 targetPoint;
     private float elapsed;
@@ -74,6 +78,8 @@ public class MagicArcProjectile : MonoBehaviour {
     }
 
     private void OnArrival() {
+        Vector3 explosionPosition = transform.position;
+        potionExplosion.Explosion(explosionPosition);
         Destroy(gameObject);
     }
 }

@@ -58,4 +58,8 @@ public class InventoryInputBridge : MonoBehaviour {
     public void OnBrewPotion(InputValue _) {
         alchemyUI.BrewPotion();
     }
+
+    public void OnTakeResult(InputValue _) {
+        alchemyUI.TakeResult();
+    }
 }
