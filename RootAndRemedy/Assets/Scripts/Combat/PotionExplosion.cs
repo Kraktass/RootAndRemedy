@@ -1,19 +1,13 @@
 using UnityEngine;
 
 public class PotionExplosion : MonoBehaviour {
+    [SerializeField] private SphereCollider sphereCollider;
+    [SerializeField] private float radius = 5f;
 
-    public void Explosion(Vector3 explosionPosition) {
-        GameObject explosionObject = new GameObject("Potion Explosion");
-
-        explosionObject.transform.position = explosionPosition;
-
-        SphereCollider sphereCollider =
-            explosionObject.AddComponent<SphereCollider>();
-
-        sphereCollider.radius = 5f;
+    private void Start() {
+        sphereCollider.radius = radius;
         sphereCollider.isTrigger = true;
-
+        Destroy(gameObject, 5f);
         Debug.Log("Explosion created");
     }
-
 }

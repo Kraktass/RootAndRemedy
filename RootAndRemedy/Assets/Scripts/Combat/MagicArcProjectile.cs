@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class MagicArcProjectile : MonoBehaviour {
@@ -16,7 +17,7 @@ public class MagicArcProjectile : MonoBehaviour {
 
 
     [Header("Explosion")]
-    [SerializeField] PotionExplosion potionExplosion;
+    [SerializeField] private PotionExplosion potionExplosionPrefab;
 
     private Vector3 startPoint;
     private Vector3 targetPoint;
@@ -78,8 +79,17 @@ public class MagicArcProjectile : MonoBehaviour {
     }
 
     private void OnArrival() {
-        Vector3 explosionPosition = transform.position;
-        potionExplosion.Explosion(explosionPosition);
+        Instantiate(
+            potionExplosionPrefab,
+            transform.position,
+            Quaternion.identity
+        );
         Destroy(gameObject);
+    }
+
+    private IEnumerator PotionFadeTimer() {
+        yield return new WaitForSeconds(5);
+        Debug.Log("Potion faded");
+
     }
 }

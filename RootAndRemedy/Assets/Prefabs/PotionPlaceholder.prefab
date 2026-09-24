@@ -208,7 +208,7 @@ MonoBehaviour:
   addSpin: 1
   spinAxis: {x: 1, y: 0.25, z: 0}
   spinSpeed: 7.17
-  potionExplosion: {fileID: 2165502423404306930, guid: 3b5a46022e4bb294d87b571ceeb8bdc9, type: 3}
+  potionExplosionPrefab: {fileID: 8657964780160493061, guid: 068b5c4de1fe6454a99c86c8c4948f0a, type: 3}
 --- !u!1 &5739219613413841692
 GameObject:
   m_ObjectHideFlags: 0
