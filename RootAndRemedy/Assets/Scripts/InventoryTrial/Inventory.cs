@@ -65,6 +65,7 @@ public class Inventory : MonoBehaviour {
         }
     }
 
+
     public List<ItemStack> GetAllIngredientItems() {
 
         List<ItemStack> ingredientList = new List<ItemStack>();
@@ -74,7 +75,7 @@ public class Inventory : MonoBehaviour {
 
             ItemSO item = slot.GetItem();
 
-            if (item.itemUseType != ItemUseType.Plantable) continue;
+            if (item.itemUseType != ItemUseType.Ingredient) continue;
 
             bool found = false;
 
@@ -302,5 +303,27 @@ public class Inventory : MonoBehaviour {
 
     public void SetPointerPosition(Vector2 screenPos) {
         pointerScreenPos = screenPos;
+    }
+
+    public bool HasEnoughItems(ItemSO item, int requiredAmount) {
+        if (item == null || requiredAmount <= 0)
+            return false;
+
+        int totalAmount = 0;
+
+        foreach (Slot slot in allSlots) {
+            if (!slot.HasItem())
+                continue;
+
+            if (slot.GetItem() != item)
+                continue;
+
+            totalAmount += slot.GetAmount();
+
+            if (totalAmount >= requiredAmount)
+                return true;
+        }
+
+        return false;
     }
 }

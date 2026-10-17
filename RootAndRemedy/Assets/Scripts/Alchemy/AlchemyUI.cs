@@ -25,6 +25,23 @@ public class AlchemyUI : MonoBehaviour {
     public bool isOpen => gameObject.activeSelf;
 
 
+    private List<ItemSO> GetSelectedIngredients() {
+        List<ItemSO> selectedIngredients = new();
+
+        foreach (BrewingSlot slot in brewingSlots) {
+            if (slot.item == null)
+                continue;
+
+            if (selectedIngredients.Contains(slot.item))
+                continue;
+
+            selectedIngredients.Add(slot.item);
+        }
+
+        return selectedIngredients;
+    }
+
+
     void Awake() {
         ingredientEntries.Clear();
         ingredientEntries.AddRange(ingredientListPanel.GetComponentsInChildren<IngredientEntry>(true));
@@ -72,29 +89,44 @@ public class AlchemyUI : MonoBehaviour {
     }
 
     public void BrewPotion() {
-        ItemSO potionResult = potionRecipeDatabase.GetPotion(
-            brewingSlotOne.item,
-            brewingSlotTwo.item
-        );
+        List<ItemSO> selectedIngredients = GetSelectedIngredients();
 
-        if (potionResult == null)
-            return;
+        PotionRecipeSO recipe =
+            potionRecipeDatabase.GetRecipe(selectedIngredients);
 
-        if (resultSlot.HasItem() && resultSlot.GetItem() != potionResult)
+        if (recipe == null) {
+            Debug.Log("No matching recipe!");
             return;
+        }
+
+        if (resultSlot.HasItem() && resultSlot.GetItem() != recipe.result) {
+            Debug.Log("Take the existing potion first!");
+            return;
+        }
+
+        foreach (RecipeIngredient ingredient in recipe.ingredients) {
+            if (!inventory.HasEnoughItems(ingredient.item, ingredient.amount)) {
+                Debug.Log($"Not enough {ingredient.item.itemName}!");
+                return;
+            }
+        }
+
+        foreach (RecipeIngredient ingredient in recipe.ingredients) {
+            inventory.ConsumeItem(ingredient.item, ingredient.amount);
+        }
 
         if (!resultSlot.HasItem()) {
-            resultSlot.SetItem(potionResult, 1);
+            resultSlot.SetItem(recipe.result, 1);
         }
         else {
             resultSlot.AddAmount(1);
         }
 
-        inventory.ConsumeItem(brewingSlotOne.item, 1);
-        inventory.ConsumeItem(brewingSlotTwo.item, 1);
         RefreshIngredientList();
-        Debug.Log("U brewed: " + potionResult.itemName);
+
+        Debug.Log("Brewed: " + recipe.result.itemName);
     }
+
     public void TakeResult() {
         ItemSO potionResult = resultSlot.GetItem();
         int potionAmount = resultSlot.GetAmount();
